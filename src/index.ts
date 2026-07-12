@@ -1,4 +1,5 @@
 import { stableHash } from './hash';
+import { formatValue, toKebab } from './css';
 import { globalStyleRegistry, StyleRegistry } from './registry';
 import type { CompiledProps, StyleInput, StyleMap, StyleObject, StylerConfiguration, VariableContract, VariantRecipe, VariantSelection } from './types';
 
@@ -59,16 +60,14 @@ export function createTheme<T extends Record<string, unknown>>(variables: Variab
 export function keyframes(frames: Record<string, StyleObject>, label = 'animation'): string {
   const name = `${label}-${stableHash(JSON.stringify(frames))}`;
   const body = Object.entries(frames).map(([step, style]) => {
-    const declarations = Object.entries(style).filter((entry): entry is [string, string | number] => typeof entry[1] === 'string' || typeof entry[1] === 'number').map(([property, value]) => `${property.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}:${typeof value === 'number' && value !== 0 ? `${value}px` : value}`).join(';');
+    const declarations = Object.entries(style)
+      .filter((entry): entry is [string, string | number] => typeof entry[1] === 'string' || typeof entry[1] === 'number')
+      .map(([property, value]) => `${toKebab(property)}:${formatValue(property, value)}`)
+      .join(';');
     return `${step}{${declarations}}`;
   }).join('');
   const cssText = `@keyframes ${name}{${body}}`;
-  if (typeof document !== 'undefined') {
-    const style = document.createElement('style');
-    style.dataset.risklabStylerKeyframes = name;
-    style.textContent = cssText;
-    document.head.appendChild(style);
-  }
+  globalStyleRegistry.registerGlobal(`keyframes:${name}`, cssText);
   return name;
 }
 

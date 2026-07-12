@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { create, createTheme, createVariants, css, defineVars, globalStyleRegistry, props } from '../src/index';
+import { create, createTheme, createVariants, css, defineVars, globalStyleRegistry, keyframes, props } from '../src/index';
 import { createServerStyleCollector } from '../src/server';
 
 beforeEach(() => globalStyleRegistry.clear());
@@ -48,5 +48,17 @@ describe('RiskLab Styler', () => {
     expect(className).toContain('server-shell');
     expect(collector.getStyleTag({ nonce: 'abc' })).toContain('nonce="abc"');
     expect(collector.getCSS()).toContain('gap:8px');
+  });
+
+  it('serializes keyframe units correctly and collects them for server output', () => {
+    const name = keyframes({
+      from: { opacity: 0, translate: 0 },
+      to: { opacity: 1, translate: 12 },
+    }, 'enter');
+    const output = globalStyleRegistry.getCSS();
+    expect(name).toMatch(/^enter-/);
+    expect(output).toContain('opacity:1');
+    expect(output).toContain('translate:12px');
+    expect(output).not.toContain('opacity:1px');
   });
 });

@@ -16,6 +16,11 @@
       "types": "./dist/types/server.d.ts",
       "import": "./dist/esm/server.js",
       "require": "./dist/cjs/server.js"
+    },
+    "./compiler": {
+      "types": "./dist/types/compiler.d.ts",
+      "import": "./dist/esm/compiler.js",
+      "require": "./dist/cjs/compiler.js"
     }
   },
   "sideEffects": false,

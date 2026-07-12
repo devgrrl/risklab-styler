@@ -34,4 +34,9 @@ const className = props(darkTheme, styles.root, button({ size: 'lg' })).classNam
 
 Server rendering uses `createServerStyleCollector` from `@risklab/styler/server`.
 
+Build-time and configuration-driven applications can compile a strict JSON
+style document with `compileStyleDocument` from `@risklab/styler/compiler`.
+The compiler returns deterministic CSS plus class and animation manifests, so
+an application can ship extracted CSS without enabling runtime injection.
+
 Licensed under Apache-2.0.
