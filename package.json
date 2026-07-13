@@ -27,6 +27,7 @@
   "files": ["dist", "README.md", "LICENSE", "NOTICE"],
   "scripts": {
     "build": "rimraf dist && tsc -p tsconfig.build.json && tsc -p tsconfig.cjs.json && node scripts/write-cjs-package.mjs",
+    "prepare": "npm run build",
     "typecheck": "tsc --noEmit",
     "lint": "node scripts/check-source.mjs",
     "test": "vitest run",
