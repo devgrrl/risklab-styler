@@ -1,6 +1,6 @@
-import { flattenStyle, renderAtomicRule } from './css';
-import { stableHash } from './hash';
-import type { AtomicRule, StyleObject, StylerConfiguration } from './types';
+import { flattenStyle, renderAtomicRule } from './css.js';
+import { stableHash } from './hash.js';
+import type { AtomicRule, StyleObject, StylerConfiguration } from './types.js';
 
 export class StyleRegistry {
   private rules = new Map<string, AtomicRule>();
@@ -55,7 +55,12 @@ export class StyleRegistry {
 
   hydrate(cssText: string, classNames: string[] = []): void {
     if (typeof document === 'undefined') return;
+    const documentTarget = this.configuration.target instanceof Document ? this.configuration.target : document;
+    const existing = documentTarget.querySelector<HTMLStyleElement>('style[data-risklab-styler="server"], style[data-risklab-styler="runtime"]');
+    if (existing) this.styleElement = existing;
     const style = this.ensureStyleElement();
+    style.dataset.risklabStyler = 'runtime';
+    if (this.configuration.nonce) style.nonce = this.configuration.nonce;
     style.textContent = cssText;
     for (const className of classNames) if (!this.metadata.has(className)) this.metadata.set(className, `hydrated|${className}`);
   }

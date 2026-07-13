@@ -34,4 +34,11 @@ describe('static style document compiler', () => {
       themes: { bad: { selector: 'body script', variables: {} } },
     })).toThrow(/selector is invalid/);
   });
+
+  it('rejects CSS and HTML breakout tokens in configuration documents', () => {
+    expect(() => compileStyleDocument({ version: 'risklab.styles/v1', styles: { bad: { color: '</style><script>' } } })).toThrow(/unsafe CSS token/);
+    expect(() => compileStyleDocument({ version: 'risklab.styles/v1', styles: { bad: { 'color};body{display': 'none' } } })).toThrow(/valid property/);
+    expect(() => compileStyleDocument({ version: 'risklab.styles/v1', styles: { bad: { '@import url(evil)': { color: 'red' } } } })).toThrow(/allowed selector or condition/);
+    expect(() => compileStyleDocument({ version: 'risklab.styles/v1', styles: {}, animations: { pulse: { '0%;body': { opacity: 1 } } } })).toThrow(/is invalid/);
+  });
 });

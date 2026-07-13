@@ -1,9 +1,9 @@
-import { stableHash } from './hash';
-import { formatValue, toKebab } from './css';
-import { globalStyleRegistry, StyleRegistry } from './registry';
-import type { CompiledProps, StyleInput, StyleMap, StyleObject, StylerConfiguration, VariableContract, VariantRecipe, VariantSelection } from './types';
+import { stableHash } from './hash.js';
+import { formatValue, toKebab } from './css.js';
+import { globalStyleRegistry, StyleRegistry } from './registry.js';
+import type { CompiledProps, StyleInput, StyleMap, StyleObject, StylerConfiguration, VariableContract, VariantRecipe, VariantSelection } from './types.js';
 
-export type * from './types';
+export type * from './types.js';
 export { stableHash, StyleRegistry, globalStyleRegistry };
 
 export function configureStyler(configuration: StylerConfiguration): void { globalStyleRegistry.configure(configuration); }

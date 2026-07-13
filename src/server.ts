@@ -1,5 +1,5 @@
-import { StyleRegistry } from './registry';
-import type { StyleObject } from './types';
+import { StyleRegistry } from './registry.js';
+import type { StyleObject } from './types.js';
 
 export interface ServerStyleCollector {
   registry: StyleRegistry;
@@ -16,8 +16,13 @@ export function createServerStyleCollector(prefix = 'rs'): ServerStyleCollector 
     css: (style, label) => registry.compile(style, label),
     getCSS: () => registry.getCSS(),
     getStyleTag(attributes = {}) {
-      const attrs = Object.entries({ 'data-risklab-styler': 'server', ...attributes }).map(([key, value]) => ` ${key}="${value.replaceAll('"', '&quot;')}"`).join('');
-      return `<style${attrs}>${registry.getCSS()}</style>`;
+      const attrs = Object.entries({ 'data-risklab-styler': 'server', ...attributes }).map(([key, value]) => {
+        if (!/^[a-zA-Z_:][a-zA-Z0-9_.:-]*$/.test(key)) throw new TypeError(`Invalid style attribute: ${key}`);
+        const escaped = value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+        return ` ${key}="${escaped}"`;
+      }).join('');
+      const css = registry.getCSS().replaceAll('<', '\\3C ');
+      return `<style${attrs}>${css}</style>`;
     },
   };
 }

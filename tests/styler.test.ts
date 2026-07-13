@@ -61,4 +61,18 @@ describe('RiskLab Styler', () => {
     expect(output).toContain('translate:12px');
     expect(output).not.toContain('opacity:1px');
   });
+
+  it('uses time and angle units for typed numeric values', () => {
+    css({ transitionDuration: 150, rotate: 45 }, 'motion');
+    expect(globalStyleRegistry.getCSS()).toContain('transition-duration:150ms');
+    expect(globalStyleRegistry.getCSS()).toContain('rotate:45deg');
+  });
+
+  it('escapes server style and attribute breakout sequences', () => {
+    const collector = createServerStyleCollector();
+    collector.css({ content: '</style>' }, 'content');
+    expect(collector.getStyleTag({ nonce: 'a"<b' })).not.toContain('</style><');
+    expect(collector.getStyleTag({ nonce: 'a"<b' })).toContain('nonce="a&quot;&lt;b"');
+    expect(() => collector.getStyleTag({ 'bad key': 'x' })).toThrow(/Invalid style attribute/);
+  });
 });

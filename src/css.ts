@@ -1,6 +1,8 @@
-import type { CSSPrimitive, StyleObject } from './types';
+import type { CSSPrimitive, StyleObject } from './types.js';
 
 const UNITLESS = new Set(['animationIterationCount', 'aspectRatio', 'borderImageOutset', 'borderImageSlice', 'borderImageWidth', 'boxFlex', 'boxFlexGroup', 'boxOrdinalGroup', 'columnCount', 'columns', 'fillOpacity', 'flex', 'flexGrow', 'flexPositive', 'flexShrink', 'flexNegative', 'flexOrder', 'floodOpacity', 'fontWeight', 'gridArea', 'gridColumn', 'gridColumnEnd', 'gridColumnSpan', 'gridColumnStart', 'gridRow', 'gridRowEnd', 'gridRowSpan', 'gridRowStart', 'lineClamp', 'lineHeight', 'opacity', 'order', 'orphans', 'scale', 'shapeImageThreshold', 'stopOpacity', 'strokeDasharray', 'strokeDashoffset', 'strokeMiterlimit', 'strokeOpacity', 'strokeWidth', 'tabSize', 'widows', 'zIndex', 'zoom']);
+const TIME_VALUES = new Set(['animationDelay', 'animationDuration', 'transitionDelay', 'transitionDuration']);
+const ANGLE_VALUES = new Set(['rotate', 'offsetRotate']);
 
 export function toKebab(property: string): string {
   if (property.startsWith('--')) return property;
@@ -9,6 +11,8 @@ export function toKebab(property: string): string {
 
 export function formatValue(property: string, value: CSSPrimitive): string {
   if (typeof value !== 'number' || value === 0 || UNITLESS.has(property) || property.startsWith('--')) return String(value);
+  if (TIME_VALUES.has(property)) return `${value}ms`;
+  if (ANGLE_VALUES.has(property)) return `${value}deg`;
   return `${value}px`;
 }
 

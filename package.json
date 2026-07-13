@@ -1,6 +1,6 @@
 {
   "name": "@risklab/styler",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Typed atomic styling engine for production application interfaces.",
   "type": "module",
   "main": "dist/cjs/index.js",
@@ -24,15 +24,21 @@
     }
   },
   "sideEffects": false,
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": ["dist", "README.md", "LICENSE", "NOTICE"],
   "scripts": {
     "build": "rimraf dist && tsc -p tsconfig.build.json && tsc -p tsconfig.cjs.json && node scripts/write-cjs-package.mjs",
     "typecheck": "tsc --noEmit",
+    "lint": "node scripts/check-source.mjs",
     "test": "vitest run",
-    "validate": "npm run typecheck && npm run test && npm run build"
+    "test:browser": "vitest run",
+    "check": "npm run lint && npm run typecheck && npm run test",
+    "prepack": "npm run check && npm run build",
+    "pack:check": "node scripts/test-consumer.mjs",
+    "release:check": "npm run check && npm run build && npm run pack:check",
+    "validate": "npm run release:check"
   },
   "keywords": ["css", "atomic-css", "typescript", "design-system", "theming", "ssr", "risklab"],
-  "author": "RiskLab Contributors",
+  "author": "Ryan Walsh",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
