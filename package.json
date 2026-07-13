@@ -30,11 +30,11 @@
     "typecheck": "tsc --noEmit",
     "lint": "node scripts/check-source.mjs",
     "test": "vitest run",
-    "test:browser": "vitest run",
+    "test:browser": "playwright test",
     "check": "npm run lint && npm run typecheck && npm run test",
     "prepack": "npm run check && npm run build",
     "pack:check": "node scripts/test-consumer.mjs",
-    "release:check": "npm run check && npm run build && npm run pack:check",
+    "release:check": "npm run check && npm run build && npm run test:browser && npm run pack:check",
     "validate": "npm run release:check"
   },
   "keywords": ["css", "atomic-css", "typescript", "design-system", "theming", "ssr", "risklab"],
@@ -47,6 +47,7 @@
   "publishConfig": { "access": "public" },
   "engines": { "node": ">=20.0.0" },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "jsdom": "^29.0.0",
     "rimraf": "^6.0.0",
     "typescript": "^5.7.0",

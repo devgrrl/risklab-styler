@@ -75,4 +75,15 @@ describe('RiskLab Styler', () => {
     expect(collector.getStyleTag({ nonce: 'a"<b' })).toContain('nonce="a&quot;&lt;b"');
     expect(() => collector.getStyleTag({ 'bad key': 'x' })).toThrow(/Invalid style attribute/);
   });
+
+  it('restores real conflict metadata during server hydration', () => {
+    const server = createServerStyleCollector('rs');
+    const serverClass = server.css({ color: 'red', padding: 8 }, 'button');
+    globalStyleRegistry.hydrate(server.getCSS(), server.getHydrationData());
+    const clientClass = css({ color: 'blue' }, 'button');
+    const composed = props(serverClass, clientClass).className.split(' ');
+    expect(composed).toContain(clientClass);
+    expect(composed).not.toContain(serverClass.split(' ')[0]);
+    expect(composed).toContain(serverClass.split(' ')[1]);
+  });
 });

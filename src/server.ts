@@ -1,4 +1,4 @@
-import { StyleRegistry } from './registry.js';
+import { StyleRegistry, type HydratedAtomicRule } from './registry.js';
 import type { StyleObject } from './types.js';
 
 export interface ServerStyleCollector {
@@ -6,6 +6,7 @@ export interface ServerStyleCollector {
   css(style: StyleObject, label?: string): string;
   getStyleTag(attributes?: Record<string, string>): string;
   getCSS(): string;
+  getHydrationData(): readonly HydratedAtomicRule[];
 }
 
 export function createServerStyleCollector(prefix = 'rs'): ServerStyleCollector {
@@ -15,6 +16,7 @@ export function createServerStyleCollector(prefix = 'rs'): ServerStyleCollector 
     registry,
     css: (style, label) => registry.compile(style, label),
     getCSS: () => registry.getCSS(),
+    getHydrationData: () => registry.getHydrationData(),
     getStyleTag(attributes = {}) {
       const attrs = Object.entries({ 'data-risklab-styler': 'server', ...attributes }).map(([key, value]) => {
         if (!/^[a-zA-Z_:][a-zA-Z0-9_.:-]*$/.test(key)) throw new TypeError(`Invalid style attribute: ${key}`);

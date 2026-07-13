@@ -2,6 +2,8 @@ import { flattenStyle, renderAtomicRule } from './css.js';
 import { stableHash } from './hash.js';
 import type { AtomicRule, StyleObject, StylerConfiguration } from './types.js';
 
+export interface HydratedAtomicRule extends AtomicRule { signature: string; }
+
 export class StyleRegistry {
   private rules = new Map<string, AtomicRule>();
   private metadata = new Map<string, string>();
@@ -43,6 +45,9 @@ export class StyleRegistry {
   has(className: string): boolean { return this.rules.has(className); }
   getCSS(): string { return [...Array.from(this.rules.values(), (rule) => rule.cssText), ...this.globalRules.values()].join('\n'); }
   getRules(): readonly AtomicRule[] { return Array.from(this.rules.values()); }
+  getHydrationData(): readonly HydratedAtomicRule[] {
+    return Array.from(this.rules.values(), (rule) => ({ ...rule, signature: this.signatures.get(rule.className) ?? '' }));
+  }
   clear(): void { this.rules.clear(); this.metadata.clear(); this.signatures.clear(); this.globalRules.clear(); this.styleElement?.remove(); this.styleElement = null; }
 
   registerGlobal(id: string, cssText: string): void {
@@ -53,7 +58,7 @@ export class StyleRegistry {
     if (this.configuration.autoInject) this.inject(cssText);
   }
 
-  hydrate(cssText: string, classNames: string[] = []): void {
+  hydrate(cssText: string, entries: readonly HydratedAtomicRule[] | readonly string[] = []): void {
     if (typeof document === 'undefined') return;
     const documentTarget = this.configuration.target instanceof Document ? this.configuration.target : document;
     const existing = documentTarget.querySelector<HTMLStyleElement>('style[data-risklab-styler="server"], style[data-risklab-styler="runtime"]');
@@ -62,7 +67,12 @@ export class StyleRegistry {
     style.dataset.risklabStyler = 'runtime';
     if (this.configuration.nonce) style.nonce = this.configuration.nonce;
     style.textContent = cssText;
-    for (const className of classNames) if (!this.metadata.has(className)) this.metadata.set(className, `hydrated|${className}`);
+    for (const entry of entries) {
+      if (typeof entry === 'string') continue;
+      this.rules.set(entry.className, { className: entry.className, cssText: entry.cssText, conflictKey: entry.conflictKey });
+      this.metadata.set(entry.className, entry.conflictKey);
+      this.signatures.set(entry.className, entry.signature);
+    }
   }
 
   private inject(cssText: string): void {
