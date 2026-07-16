@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { create, createTheme, createVariants, css, defineVars, globalStyleRegistry, keyframes, props } from '../src/index';
+import { configureStyler, create, createTheme, createVariants, css, defineVars, globalStyleRegistry, keyframes, props, StyleRegistry } from '../src/index';
 import { createServerStyleCollector } from '../src/server';
 
 beforeEach(() => globalStyleRegistry.clear());
@@ -85,5 +85,41 @@ describe('RiskLab Styler', () => {
     expect(composed).toContain(clientClass);
     expect(composed).not.toContain(serverClass.split(' ')[0]);
     expect(composed).toContain(serverClass.split(' ')[1]);
+  });
+
+  it('composes nested, unmanaged, and conditional class inputs', () => {
+    const managed = css({ color: 'red' }, 'managed');
+    expect(props(null, false, ['external', { className: `other ${managed}` }], undefined).className)
+      .toBe(`external other ${managed}`);
+  });
+
+  it('supports registry configuration, global rule idempotence, and safe collisions', () => {
+    const registry = new StyleRegistry();
+    registry.configure({ prefix: 'demo', nonce: 'abc', target: document.head });
+    const className = registry.compile({ color: 'red' }, 'unsafe label!');
+    expect(className).toMatch(/^demo-unsafelabel-/);
+    expect(document.head.querySelector('style')?.nonce).toBe('abc');
+    registry.registerGlobal('reset', '*{box-sizing:border-box}');
+    registry.registerGlobal('reset', '*{box-sizing:border-box}');
+    expect(() => registry.registerGlobal('reset', 'body{margin:0}')).toThrow(/collision/);
+    expect(registry.has(className)).toBe(true);
+    expect(registry.getRules()).toHaveLength(1);
+    registry.clear();
+    expect(registry.getCSS()).toBe('');
+  });
+
+  it('handles sparse themes, unmatched variants, and legacy hydration entries', () => {
+    configureStyler({ prefix: 'rs', autoInject: false });
+    const vars = defineVars({ color: { accent: '' }, optional: null }, 'sparse');
+    expect(createTheme(vars, { color: { accent: '#fff' }, optional: null }, 'sparse')).toBeTruthy();
+    const recipe = createVariants({
+      variants: { tone: { quiet: { opacity: 0.6 } } },
+      defaults: { tone: 'quiet' },
+      compounds: [{ when: { tone: 'loud' }, style: { fontWeight: 700 } }],
+    }, 'quiet');
+    expect(recipe({ tone: 'missing' as 'quiet' })).toBe('');
+    globalStyleRegistry.hydrate('.legacy{color:red}', ['legacy']);
+    expect(globalStyleRegistry.getCSS()).not.toContain('legacy');
+    configureStyler({ prefix: 'rs', autoInject: true });
   });
 });

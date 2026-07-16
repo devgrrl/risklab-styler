@@ -24,34 +24,53 @@
     }
   },
   "sideEffects": false,
-  "files": ["dist", "README.md", "LICENSE", "NOTICE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
   "scripts": {
     "build": "rimraf dist && tsc -p tsconfig.build.json && tsc -p tsconfig.cjs.json && node scripts/write-cjs-package.mjs",
     "prepare": "npm run build",
     "typecheck": "tsc --noEmit",
     "lint": "node scripts/check-source.mjs",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:browser": "playwright test",
     "check": "npm run lint && npm run typecheck && npm run test",
     "prepack": "npm run check && npm run build",
     "pack:check": "node scripts/test-consumer.mjs",
-    "release:check": "npm run check && npm run build && npm run test:browser && npm run pack:check",
+    "release:check": "npm run check && npm run test:coverage && npm run build && npm run test:browser && npm run pack:check",
     "validate": "npm run release:check"
   },
-  "keywords": ["css", "atomic-css", "typescript", "design-system", "theming", "ssr", "risklab"],
+  "keywords": [
+    "css",
+    "atomic-css",
+    "typescript",
+    "design-system",
+    "theming",
+    "ssr",
+    "risklab"
+  ],
   "author": "Sarah Walsh",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/devgrrl/risklab-styler"
   },
-  "publishConfig": { "access": "public" },
-  "engines": { "node": ">=20.0.0" },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
+    "@vitest/coverage-v8": "^3.2.7",
     "jsdom": "^29.0.0",
     "rimraf": "^6.0.0",
     "typescript": "^5.7.0",
-    "vitest": "^3.0.0"
+    "vitest": "^3.2.7"
   }
 }
